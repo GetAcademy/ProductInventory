@@ -1,6 +1,36 @@
 @ProductInventory.API_HostAddress = http://localhost:5055
 
-GET {{ProductInventory.API_HostAddress}}/weatherforecast/
+GET {{ProductInventory.API_HostAddress}}/products
+Accept: application/json
+
+###
+
+GET {{ProductInventory.API_HostAddress}}/products/1
+Accept: application/json
+
+###
+
+POST {{ProductInventory.API_HostAddress}}/products
+Content-Type: application/json
+
+{
+  "name": "Webcam",
+  "productCode": "WEBCAM-01",
+  "stockCount": 12
+}
+
+###
+
+PATCH {{ProductInventory.API_HostAddress}}/products/1/stock
+Content-Type: application/json
+
+{
+  "stockCount": 8
+}
+
+###
+
+DELETE {{ProductInventory.API_HostAddress}}/products/1
 Accept: application/json
 
 ###

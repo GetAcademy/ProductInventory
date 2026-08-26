@@ -1,34 +1,81 @@
+using ProductInventory.API.DTO;
+using ProductInventory.Core._1_ApplicationService;
+using ProductInventory.Core._2_DomainServices;
+using ProductInventory.Core._3_DomainModel;
+using ProductInventory.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("ProductInventory")
+    ?? throw new InvalidOperationException(
+        "Connection string 'ProductInventory' mangler i konfigurasjonen.");
+
+builder.Services.AddScoped<IProductRepository>(_ => new SqlProductRepository(connectionString));
+builder.Services.AddScoped<ProductService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.MapGet(
+    "/products",
+    async (ProductService service) =>
+    {
+        var products = await service.GetAllAsync();
+        return Results.Ok(products);
+    });
 
-app.UseHttpsRedirection();
+app.MapGet(
+    "/products/{id:int}",
+    async (int id, ProductService service) =>
+    {
+        var product = await service.FindAsync(id);
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+        return product is null
+            ? Results.NotFound("Produktet finnes ikke.")
+            : Results.Ok(product);
+    });
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+app.MapPost("/products", async (CreateProductDto dto, ProductService service) =>
+    {
+        var product = new Product
+        {
+            Name = dto.Name,
+            ProductCode = dto.ProductCode,
+            StockCount = dto.StockCount
+        };
+
+        var result = await service.CreateProductAsync(product);
+
+        if (!result.IsSuccess) return Results.BadRequest(result.ErrorMessage);
+
+        return Results.Created($"/products/{result.Value!.Id}", result.Value);
+    });
+
+app.MapPatch(
+    "/products/{id:int}/stock",
+    async (int id, UpdateStockDto dto, ProductService service) =>
+    {
+        var result = await service.UpdateStockAsync(id, dto.StockCount);
+
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(result.ErrorMessage);
+        }
+
+        return Results.Ok(result.Value);
+    });
+
+app.MapDelete(
+    "/products/{id:int}",
+    async (int id, ProductService service) =>
+    {
+        var result = await service.DeleteAsync(id);
+
+        if (!result.IsSuccess)
+        {
+            return Results.NotFound(result.ErrorMessage);
+        }
+
+        return Results.Ok(result.Value);
+    });
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

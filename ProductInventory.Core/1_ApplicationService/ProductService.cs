@@ -3,8 +3,18 @@ using ProductInventory.Core._3_DomainModel;
 
 namespace ProductInventory.Core._1_ApplicationService
 {
-    internal class ProductService(IProductRepository repo)
+    public class ProductService(IProductRepository repo)
     {
+        public Task<IEnumerable<Product>> GetAllAsync()
+        {
+            return repo.GetAllAsync();
+        }
+
+        public Task<Product?> FindAsync(int id)
+        {
+            return repo.FindAsync(id);
+        }
+
         public async Task<Result<Product>> CreateProductAsync(Product product)
         {
             if (string.IsNullOrWhiteSpace(product.Name))
@@ -24,6 +34,51 @@ namespace ProductInventory.Core._1_ApplicationService
 
             var id = await repo.CreateAsync(product);
             product.Id = id;
+            return Result<Product>.Success(product);
+        }
+
+        public async Task<Result<Product>> UpdateStockAsync(
+            int id,
+            int newStockCount)
+        {
+            if (newStockCount < 0)
+            {
+                return Result<Product>.Failure("Lagerbeholdning kan ikke være negativ.");
+            }
+
+            var updated = await repo.UpdateStockAsync(id, newStockCount);
+
+            if (!updated)
+            {
+                return Result<Product>.Failure("Produktet finnes ikke.");
+            }
+
+            var product = await repo.FindAsync(id);
+
+            if (product is null)
+            {
+                return Result<Product>.Failure("Produktet kunne ikke hentes etter oppdateringen.");
+            }
+
+            return Result<Product>.Success(product);
+        }
+
+        public async Task<Result<Product>> DeleteAsync(int id)
+        {
+            var product = await repo.FindAsync(id);
+
+            if (product is null)
+            {
+                return Result<Product>.Failure("Produktet finnes ikke.");
+            }
+
+            var deleted = await repo.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return Result<Product>.Failure("Produktet kunne ikke slettes.");
+            }
+
             return Result<Product>.Success(product);
         }
     }
