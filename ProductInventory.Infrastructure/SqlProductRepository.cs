@@ -48,39 +48,45 @@ namespace ProductInventory.Infrastructure
             return await connection.QuerySingleAsync<int>(sql, product);
         }
 
-        public async Task<bool> UpdateStockAsync(int id, int newStockCount)
+        public async Task<Product?> UpdateStockAsync(int id, int newStockCount)
         {
             const string sql =
                 """
                 UPDATE Products
                 SET StockCount = @StockCount
+                OUTPUT
+                    INSERTED.Id,
+                    INSERTED.Name,
+                    INSERTED.ProductCode,
+                    INSERTED.StockCount
                 WHERE Id = @Id;
                 """;
 
             await using var connection = new SqlConnection(connectionString);
-            var rowsAffected = await connection.ExecuteAsync(
+            return await connection.QuerySingleOrDefaultAsync<Product>(
                 sql,
                 new
                 {
                     Id = id,
                     StockCount = newStockCount
                 });
-
-            return rowsAffected == 1;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<Product?> DeleteAsync(int id)
         {
             const string sql =
                 """
                 DELETE FROM Products
+                OUTPUT
+                    DELETED.Id,
+                    DELETED.Name,
+                    DELETED.ProductCode,
+                    DELETED.StockCount
                 WHERE Id = @Id;
                 """;
 
             await using var connection = new SqlConnection(connectionString);
-            var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
-
-            return rowsAffected == 1;
+            return await connection.QuerySingleOrDefaultAsync<Product>(sql, new { Id = id });
         }
     }
 }

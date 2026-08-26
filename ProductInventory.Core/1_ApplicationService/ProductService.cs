@@ -46,18 +46,11 @@ namespace ProductInventory.Core._1_ApplicationService
                 return Result<Product>.Failure("Lagerbeholdning kan ikke være negativ.");
             }
 
-            var updated = await repo.UpdateStockAsync(id, newStockCount);
-
-            if (!updated)
-            {
-                return Result<Product>.Failure("Produktet finnes ikke.");
-            }
-
-            var product = await repo.FindAsync(id);
+            var product = await repo.UpdateStockAsync(id, newStockCount);
 
             if (product is null)
             {
-                return Result<Product>.Failure("Produktet kunne ikke hentes etter oppdateringen.");
+                return Result<Product>.Failure("Produktet finnes ikke.");
             }
 
             return Result<Product>.Success(product);
@@ -65,18 +58,11 @@ namespace ProductInventory.Core._1_ApplicationService
 
         public async Task<Result<Product>> DeleteAsync(int id)
         {
-            var product = await repo.FindAsync(id);
+            var product = await repo.DeleteAsync(id);
 
             if (product is null)
             {
                 return Result<Product>.Failure("Produktet finnes ikke.");
-            }
-
-            var deleted = await repo.DeleteAsync(id);
-
-            if (!deleted)
-            {
-                return Result<Product>.Failure("Produktet kunne ikke slettes.");
             }
 
             return Result<Product>.Success(product);

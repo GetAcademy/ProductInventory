@@ -10,8 +10,8 @@ namespace ProductInventory.Core._2_DomainServices
 
         Task<int> CreateAsync(Product product);
 
-        Task<bool> UpdateStockAsync(int id, int newStockCount);
+        Task<Product?> UpdateStockAsync(int id, int newStockCount);
 
-        Task<bool> DeleteAsync(int id);
+        Task<Product?> DeleteAsync(int id);
     }
 }
