@@ -1,4 +1,4 @@
-﻿namespace ProductInventory.Core.DomainModel
+﻿namespace ProductInventory.Core._3_DomainModel
 {
     /*
      * Vi velger å ha kun én klasse Product, som skal

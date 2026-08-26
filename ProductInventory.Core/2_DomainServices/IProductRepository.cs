@@ -1,6 +1,6 @@
-﻿using ProductInventory.Core.DomainModel;
+﻿using ProductInventory.Core._3_DomainModel;
 
-namespace ProductInventory.Core.DomainServices
+namespace ProductInventory.Core._2_DomainServices
 {
     public interface IProductRepository
     {

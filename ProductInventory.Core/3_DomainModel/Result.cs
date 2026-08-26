@@ -1,4 +1,4 @@
-﻿namespace ProductInventory.Core.DomainModel
+﻿namespace ProductInventory.Core._3_DomainModel
 {
     public class Result<T>
     {

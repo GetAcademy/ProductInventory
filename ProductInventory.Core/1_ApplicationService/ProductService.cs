@@ -1,7 +1,7 @@
-﻿using ProductInventory.Core.DomainModel;
-using ProductInventory.Core.DomainServices;
+﻿using ProductInventory.Core._2_DomainServices;
+using ProductInventory.Core._3_DomainModel;
 
-namespace ProductInventory.Core.ApplicationService
+namespace ProductInventory.Core._1_ApplicationService
 {
     internal class ProductService(IProductRepository repo)
     {
@@ -22,8 +22,8 @@ namespace ProductInventory.Core.ApplicationService
                 return Result<Product>.Failure("Lagerbeholdning kan ikke være negativ.");
             }
 
-            await repo.CreateAsync(product);
-
+            var id = await repo.CreateAsync(product);
+            product.Id = id;
             return Result<Product>.Success(product);
         }
     }
